@@ -1,0 +1,48 @@
+name: VOX Booking Tracker
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # every hour
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python packages
+        run: |
+          pip install -r requirements.txt
+
+      - name: Install Playwright
+        run: |
+          playwright install chromium
+
+      - name: Run bot
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          python app.py
+
+      - name: Commit updated snapshot
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          git add data/snapshot.json
+
+          git diff --cached --quiet || git commit -m "Update snapshot"
+
+          git push

@@ -4,6 +4,7 @@ from services.storage import save_snapshot
 from services.storage import load_snapshot
 from services.comparer import compare_snapshots
 from services.discord import send_notification
+from services.telegram import send_notification as send_telegram
 
 def main():
 
@@ -20,7 +21,8 @@ def main():
         for change in changes:
             print(change)
 
-        send_notification(changes)
+        send_notification(changes)      # Discord
+        send_telegram(changes)          # Telegram
 
     else:
 

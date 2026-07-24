@@ -1,10 +1,9 @@
 from collections import Counter
 from datetime import datetime, timedelta
-from playwright.sync_api import sync_playwright
 
 from config import SHOWTIMES_URL
+from services.fetcher import fetch_html
 from services.parser import get_movies
-
 
 LOOKAHEAD_DAYS = 14
 
@@ -13,59 +12,44 @@ def build_snapshot():
 
     snapshot = {}
 
-    with sync_playwright() as p:
+    consecutive_empty = 0
 
-        browser = p.chromium.launch(headless=False)
+    for i in range(LOOKAHEAD_DAYS):
 
-        consecutive_empty = 0
+        date = datetime.today() + timedelta(days=i)
 
-        for i in range(LOOKAHEAD_DAYS):
+        display_date = date.strftime("%Y-%m-%d")
+        vox_date = date.strftime("%Y%m%d")
 
-            date = datetime.today() + timedelta(days=i)
+        url = f"{SHOWTIMES_URL}&d={vox_date}"
 
-            display_date = date.strftime("%Y-%m-%d")
-            vox_date = date.strftime("%Y%m%d")
+        print(f"Scanning {display_date}")
 
-            url = f"{SHOWTIMES_URL}&d={vox_date}"
+        try:
 
-            print(f"Scanning {display_date}")
+            html = fetch_html(url)
 
-            page = browser.new_page()
+            movies = get_movies(html)
 
-            try:
+            if not movies:
 
-                page.goto(
-                    url,
-                    wait_until="domcontentloaded",
-                    timeout=30000
-                )
+                consecutive_empty += 1
 
-                page.wait_for_timeout(3000)
+                print("Found 0 movies")
 
-                movies = get_movies(page)
+                if consecutive_empty >= 3:
+                    break
 
-                page.close()
+                continue
 
-                if not movies:
-                    consecutive_empty += 1
+            consecutive_empty = 0
 
-                    if consecutive_empty >= 3:
-                        break
+            snapshot[display_date] = dict(Counter(movies))
 
-                    continue
+            print(f"Found {len(movies)} movies")
 
-                consecutive_empty = 0
+        except Exception as e:
 
-                snapshot[display_date] = dict(Counter(movies))
-
-                print(f"  Found {len(movies)} movies")
-
-            except Exception as e:
-
-                print(e)
-
-                page.close()
-
-        browser.close()
+            print(e)
 
     return snapshot

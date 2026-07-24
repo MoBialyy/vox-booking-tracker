@@ -2,7 +2,7 @@ name: VOX Booking Tracker
 
 on:
   schedule:
-    - cron: "0 * * * *"   # every hour
+     - cron: "*/30 * * * *"
 
   workflow_dispatch:
 

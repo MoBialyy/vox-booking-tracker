@@ -1,6 +1,7 @@
 import requests
 
-from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+from config import TELEGRAM_API
+from services.telegram_users import load_users
 
 
 def send_notification(changes):
@@ -8,18 +9,23 @@ def send_notification(changes):
     if not changes:
         return
 
+    users = load_users()
+
+    if not users:
+        return
+
     message = "🎬 *VOX Booking Update*\n\n" + "\n".join(changes)
 
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    for user in users:
 
-    response = requests.post(
-        url,
-        json={
-            "chat_id": TELEGRAM_CHAT_ID,
-            "text": message,
-            "parse_mode": "Markdown",
-        },
-        timeout=30,
-    )
+        response = requests.post(
+            f"{TELEGRAM_API}/sendMessage",
+            json={
+                "chat_id": user["chat_id"],
+                "text": message,
+                "parse_mode": "Markdown",
+            },
+            timeout=30,
+        )
 
-    response.raise_for_status()
+        response.raise_for_status()

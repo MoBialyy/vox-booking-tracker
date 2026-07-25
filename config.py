@@ -27,4 +27,6 @@ SHOWTIMES_URL = "https://egy.voxcinemas.com/showtimes?c=city-centre-almaza"
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK")
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+#TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+TELEGRAM_API = f"https://api.telegram.org/bot{os.getenv('TELEGRAM_BOT_TOKEN')}"

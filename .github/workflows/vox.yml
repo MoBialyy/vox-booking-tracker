@@ -39,7 +39,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
-          git add data/snapshot.json
+          git add data/
 
           git diff --cached --quiet || git commit -m "Update snapshot"
 
